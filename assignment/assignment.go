@@ -1,6 +1,7 @@
 package assignment
 
 import (
+	"math"
 	"sort"
 	"strings"
 )
@@ -15,22 +16,7 @@ func AddUint32(x, y uint32) (uint32, bool) {
 }
 
 func CeilNumber(f float64) float64 {
-	beforePoint := int(f)
-	afterPoint := f - float64(beforePoint)
-	switch {
-	case afterPoint == 0:
-		afterPoint = 0
-	case afterPoint <= 0.25:
-		afterPoint = 0.25
-	case afterPoint <= 0.50:
-		afterPoint = 0.50
-	case afterPoint <= 0.75:
-		afterPoint = 0.75
-	default:
-		afterPoint = 1
-	}
-	//math.Ceil(f)
-	return float64(beforePoint) + afterPoint
+	return (math.Ceil(4*f) / 4)
 }
 
 func AlphabetSoup(s string) string {
