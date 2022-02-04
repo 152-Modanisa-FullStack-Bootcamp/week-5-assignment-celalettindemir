@@ -19,10 +19,32 @@ func TestAddUint32(t *testing.T) {
 			4294967290, 6 => 0, true
 			4294967290, 10 => 4, true
 	*/
-	sum, overflow := AddUint32(math.MaxUint32, 1)
+	type input struct {
+		x, y uint32
+	}
+	type result struct {
+		sum      uint32
+		overflow bool
+	}
+	cases := []struct {
+		input
+		result
+	}{
+		{input{math.MaxUint32, 1}, result{0, true}}, // other cases
+		{input{1, 1}, result{2, false}},
+		{input{42, 2701}, result{2743, false}},
+		{input{4294967290, 5}, result{4294967295, false}},
+		{input{4294967290, 6}, result{0, true}},
+		{input{4294967290, 10}, result{4, true}},
+	}
 
-	assert.Equal(t, uint32(0), sum)
-	assert.True(t, overflow)
+	for _, c := range cases {
+		sum, overflow := AddUint32(c.x, c.y)
+
+		assert.Equal(t, c.sum, sum)
+		assert.Equal(t, c.overflow, overflow)
+	}
+
 }
 
 func TestCeilNumber(t *testing.T) {
@@ -41,9 +63,28 @@ func TestCeilNumber(t *testing.T) {
 			42.99 => 43
 			43.13 => 43.25
 	*/
-	point := CeilNumber(42.42)
+	cases := []struct {
+		input, result float64
+	}{
+		{42.42, 42.50}, // other cases
+		{42, 42},
+		{42.01, 42.25},
+		{42.24, 42.25},
+		{42.25, 42.25},
+		{42.26, 42.50},
+		{42.55, 42.75},
+		{42.75, 42.75},
+		{42.76, 43},
+		{42.99, 43},
+		{43.13, 43.25},
+	}
 
-	assert.Equal(t, 42.50, point)
+	for _, c := range cases {
+		point := CeilNumber(c.input)
+
+		assert.Equal(t, c.result, point)
+	}
+
 }
 
 func TestAlphabetSoup(t *testing.T) {
@@ -58,9 +99,23 @@ func TestAlphabetSoup(t *testing.T) {
 			"bac" => "abc"
 			"cba" => "abc"
 	*/
-	result := AlphabetSoup("hello")
+	cases := []struct {
+		input, result string
+	}{
+		{"hello", "ehllo"}, // other cases
+		{"", ""},
+		{"h", "h"},
+		{"ab", "ab"},
+		{"ba", "ab"},
+		{"bac", "abc"},
+		{"cba", "abc"},
+	}
 
-	assert.Equal(t, "ehllo", result)
+	for _, c := range cases {
+		result := AlphabetSoup(c.input)
+		assert.Equal(t, c.result, result)
+	}
+
 }
 
 func TestStringMask(t *testing.T) {
@@ -77,9 +132,31 @@ func TestStringMask(t *testing.T) {
 			"string", 7(bigger than len of "string") => "******"
 			"s*r*n*", 3 => "s*r***"
 	*/
-	result := StringMask("!mysecret*", 2)
 
-	assert.Equal(t, "!m********", result)
+	type input struct {
+		str string
+		n   int32
+	}
+	cases := []struct {
+		input
+		result string
+	}{
+		{input{"!mysecret*", 2}, "!m********"}, // other cases
+		{input{"", 5}, "*"},
+		{input{"a", 1}, "*"},
+		{input{"string", 0}, "******"},
+		{input{"string", 3}, "str***"},
+		{input{"string", 5}, "strin*"},
+		{input{"string", 6}, "******"},
+		{input{"string", 10}, "******"},
+		{input{"s*r*n*", 3}, "s*r***"},
+	}
+
+	for _, c := range cases {
+		result := StringMask(c.str, uint(c.n))
+		assert.Equal(t, c.result, result)
+	}
+
 }
 
 func TestWordSplit(t *testing.T) {
@@ -96,9 +173,22 @@ func TestWordSplit(t *testing.T) {
 			[2]string{"notcat",words} => not possible
 			[2]string{"bootcamprocks!",words} => not possible
 	*/
-	result := WordSplit([2]string{"hellocat", words})
+	cases := []struct {
+		input  [2]string
+		result string
+	}{
+		{[2]string{"hellocat", words}, "hello,cat"}, // other cases
+		{[2]string{"catbat", words}, "cat,bat"},
+		{[2]string{"yellowapple", words}, "yellow,apple"},
+		{[2]string{"", words}, "not possible"},
+		{[2]string{"notcat", words}, "not possible"},
+		{[2]string{"bootcamprocks!", words}, "not possible"},
+	}
 
-	assert.Equal(t, "hello,cat", result)
+	for _, c := range cases {
+		result := WordSplit(c.input)
+		assert.Equal(t, c.result, result)
+	}
 }
 
 func TestVariadicSet(t *testing.T) {
@@ -109,10 +199,21 @@ func TestVariadicSet(t *testing.T) {
 		Convert inputs to set(no duplicate element)
 		cases need to pass:
 			4,2,5,4,2,4 => []interface{4,2,5}
-			"bootcamp","rocks!","really","rocks! => []interface{"bootcamp","rocks!","really"}
+			"bootcamp","rocks!","really","rocks!" => []interface{"bootcamp","rocks!","really"}
 			1,uint32(1),"first",2,uint32(2),"second",1,uint32(2),"first" => []interface{1,uint32(1),"first",2,uint32(2),"second"}
 	*/
-	set := VariadicSet(4, 2, 5, 4, 2, 4)
 
-	assert.Equal(t, []interface{}{4, 2, 5}, set)
+	cases := []struct {
+		input  []interface{}
+		result []interface{}
+	}{
+		{[]interface{}{4, 2, 5, 4, 2, 4}, []interface{}{4, 2, 5}}, // other cases
+		{[]interface{}{"bootcamp", "rocks!", "really", "rocks!"}, []interface{}{"bootcamp", "rocks!", "really"}},
+		{[]interface{}{1, uint32(1), "first", 2, uint32(2), "second", 1, uint32(2), "first"}, []interface{}{1, uint32(1), "first", 2, uint32(2), "second"}},
+	}
+
+	for _, c := range cases {
+		set := VariadicSet(c.input...)
+		assert.Equal(t, c.result, set)
+	}
 }
